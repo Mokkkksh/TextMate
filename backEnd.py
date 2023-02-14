@@ -8,6 +8,9 @@ from wordcloud import WordCloud
 from matplotlib import font_manager
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
+import cv2
+
 
 
 #Initialize the file path variable
@@ -16,16 +19,33 @@ outputPath = ""
 inputPathEntered = False
 
 outputText = ""
-languageCodeDictionary = {"English": "en", "Hindi": "hi"}
-fontDictionary = {"English": "fonts/aovel.ttf", "Hindi": "fonts/mangal.TTF"}
+languageCodeDictionary = {"English": "en", "Hindi": "hi", "Gujarati": "gu"}
+fontDictionary = {"English": "fonts/aovel.ttf", "Hindi": "fonts/mangal.TTF", "Gujarati": "fonts/akshar.ttf"}
 
 def processImage(languageCode):
-    imgReader = easyocr.Reader([languageCode])
-    tempText = imgReader.readtext(inputPath, paragraph=True)
     global outputText
     outputText = ""
-    for i in tempText:
-        outputText = outputText + i[1] + " "
+
+    if languageCode != "gu":
+        imgReader = easyocr.Reader([languageCode])
+        tempText = imgReader.readtext(inputPath, paragraph=True)
+        for i in tempText:
+            outputText = outputText + i[1] + " "
+    else:
+        #CODE RELATING TO CHARACTER SEGMENTATION AND EXTRACTION TO BE PLACED HERE
+        imgReader = loadModel()
+        #Test:
+        character_img = cv2.imread("ocr_training/vyanjan_database/Train/ક/aakar-medium_0_ક_0.png", cv2.IMREAD_GRAYSCALE)
+        character = np.asarray(character_img, dtype = np.float32).reshape(1, 32, 32, 1) / 255 
+
+        tempText = imgReader.predict(character) 
+        tempText = tempText.reshape(37)
+        tempText = np.argmax(tempText)
+        class_names = ['ક', 'ક્ષ', 'ખ', 'ગ', 'ઘ', 'ચ', 'છ', 'જ', 'જ્ઞ', 'ઝ', 'ટ', 'ઠ', 'ડ', 'ઢ', 'ણ', 'ત', 'ત્ર', 'થ', 'દ', 'દ્ર', 'ધ', 'ન', 'પ', 'ફ', 'બ', 'ભ', 'મ', 'ય', 'ર', 'લ', 'ળ', 'વ', 'શ', 'શ્ર', 'ષ', 'સ', 'હ']
+        tempText = class_names[tempText]
+        print(tempText)
+
+        #THE FINAL STRING IS TO BE STORED IN outputText VARIABLE
     print(outputText)
 
 def saveFile():
@@ -78,12 +98,6 @@ def generateWordCloud(language):
     plt.show()
 
 def loadModel():
-    json_file = open('ocr_training/saved_models/cnnModel.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-    # load weights into new model
-    loaded_model.load_weights("ocr_training/saved_models/cnnModel.h5")
-    print("Loaded model from disk")
-    return loaded_model
+    cnnModel = keras.models.load_model('ocr_training/saved_models/cnnModel')
+    return cnnModel
 

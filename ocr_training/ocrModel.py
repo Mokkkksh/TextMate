@@ -29,6 +29,8 @@ testingGen = tf.keras.utils.image_dataset_from_directory(
     color_mode='grayscale')
 
 class_names = trainingGen.class_names
+print(class_names)
+
 no_of_classes = len(class_names)
 
 #Creating a function to display the images
@@ -92,8 +94,5 @@ print(f"Testing loss: {trainingScore[0]}")
 print(f"Testing accuracy: {trainingScore[1]}")
 
 #Saving the model
-cnnModel_json = cnnModel.to_json()
-with open('ocr_training/saved_models/cnnModel.json', 'w') as json_file:
-    json_file.write(cnnModel_json)
-cnnModel.save_weights('ocr_training/saved_models/cnnModel.h5')
+cnnModel.save('ocr_training/saved_models/cnnModel')
 print("Model Saved")

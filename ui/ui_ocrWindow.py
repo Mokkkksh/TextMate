@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/moksh/Documents/Development/TextMateGUI/ui/ocrWindow.ui'
+# Form implementation generated from reading ui file '/Users/moksh/Documents/Development/CSE100 Project - Python OCR/ui/ocrWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.8
 #

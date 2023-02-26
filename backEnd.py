@@ -10,6 +10,8 @@ import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 import cv2
+import recognition as r
+from PIL import Image
 
 
 
@@ -33,17 +35,41 @@ def processImage(languageCode):
             outputText = outputText + i[1] + " "
     else:
         #CODE RELATING TO CHARACTER SEGMENTATION AND EXTRACTION TO BE PLACED HERE
-        imgReader = loadModel()
-        #Test:
-        character_img = cv2.imread("ocr_training/vyanjan_database/Train/ક/aakar-medium_0_ક_0.png", cv2.IMREAD_GRAYSCALE)
-        character = np.asarray(character_img, dtype = np.float32).reshape(1, 32, 32, 1) / 255 
 
-        tempText = imgReader.predict(character) 
-        tempText = tempText.reshape(37)
-        tempText = np.argmax(tempText)
-        class_names = ['ક', 'ક્ષ', 'ખ', 'ગ', 'ઘ', 'ચ', 'છ', 'જ', 'જ્ઞ', 'ઝ', 'ટ', 'ઠ', 'ડ', 'ઢ', 'ણ', 'ત', 'ત્ર', 'થ', 'દ', 'દ્ર', 'ધ', 'ન', 'પ', 'ફ', 'બ', 'ભ', 'મ', 'ય', 'ર', 'લ', 'ળ', 'વ', 'શ', 'શ્ર', 'ષ', 'સ', 'હ']
-        tempText = class_names[tempText]
-        print(tempText)
+        img = Image.open(inputPath).convert("L")
+        imgReader = loadModel()
+
+        arr = r.sort_positions_in_line(r.sort_lines(r.extract_positions(r.read(img))))
+        for i in range(len(arr)):
+            for j in range(len(arr[i])):
+                region = img.crop((arr[i][j][0], arr[i][j][1], arr[i][j][2], arr[i][j][3]))
+                print(arr[i][j][0], arr[i][j][1], arr[i][j][2], arr[i][j][3])
+                region = region.resize((32, 32))
+                character = np.asarray(region, dtype=np.float32).reshape(1, 32, 32, 1) / 255
+
+                tempText = imgReader.predict(character) 
+                tempText = tempText.reshape(37)
+                print(tempText)
+                tempText = np.argmax(tempText)
+                # print(tempText)
+                class_names = ['ક', 'ક્ષ', 'ખ', 'ગ', 'ઘ', 'ચ', 'છ', 'જ', 'જ્ઞ', 'ઝ', 'ટ', 'ઠ', 'ડ', 'ઢ', 'ણ', 'ત', 'ત્ર', 'થ', 'દ', 'દ્ર', 'ધ', 'ન', 'પ', 'ફ', 'બ', 'ભ', 'મ', 'ય', 'ર', 'લ', 'ળ', 'વ', 'શ', 'શ્ર', 'ષ', 'સ', 'હ']
+                tempText = class_names[tempText]
+
+                outputText = outputText + str(tempText)
+            
+            outputText = outputText + "\n"
+
+
+        #Test:
+        # character_img = cv2.imread("ocr_training/vyanjan_database/Train/ક/aakar-medium_0_ક_0.png", cv2.IMREAD_GRAYSCALE)
+        # character = np.asarray(character_img, dtype = np.float32).reshape(1, 32, 32, 1) / 255 
+
+        # tempText = imgReader.predict(character) 
+        # tempText = tempText.reshape(37)
+        # tempText = np.argmax(tempText)
+        # class_names = ['ક', 'ક્ષ', 'ખ', 'ગ', 'ઘ', 'ચ', 'છ', 'જ', 'જ્ઞ', 'ઝ', 'ટ', 'ઠ', 'ડ', 'ઢ', 'ણ', 'ત', 'ત્ર', 'થ', 'દ', 'દ્ર', 'ધ', 'ન', 'પ', 'ફ', 'બ', 'ભ', 'મ', 'ય', 'ર', 'લ', 'ળ', 'વ', 'શ', 'શ્ર', 'ષ', 'સ', 'હ']
+        # tempText = class_names[tempText]
+        # print(tempText)
 
         #THE FINAL STRING IS TO BE STORED IN outputText VARIABLE
     print(outputText)
